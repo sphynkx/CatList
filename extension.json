@@ -1,0 +1,25 @@
+{
+	"name": "CatList",
+	"version": "1.0.0",
+	"author": [
+		"Sphynkx"
+	],
+	"url": "http://localhost",
+	"descriptionmsg": "catlist-desc",
+	"license-name": "GPL-2.0-or-later",
+	"type": "other",
+	"requires": {
+		"MediaWiki": ">= 1.35.0"
+	},
+    "MessagesDirs": {
+	"CatList": [
+	    "i18n"
+	]
+    },
+    "AutoloadClasses": {
+	"CatListHooks": "Hooks.php"
+    },
+    "Hooks": {
+	"ParserFirstCallInit": "CatListHooks::wfCatListSetup"
+    },	"manifest_version": 1
+}
