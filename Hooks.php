@@ -114,8 +114,9 @@ class CatListHooks {
 	}## end of foreach
 
 	if (isset($args['toc'])) {
+	    $collapsed = ($args['toc']=='collapsed') ? 'mw-collapsed' : '';
 	    $toc_letters = array_unique($toc_letters);
-	    $toc.='<div class="toccolours mw-collapsible mw-collapsed" data-expandtext="+" data-collapsetext="-" style="width:100%; display: table-cell; margin: 0.5em 0 0 2em"><h3>' . wfMessage( 'catlist-toc' )->plain() . '</h3><div class="mw-collapsible-content" style="text-align: center"><h2>'.implode(' ', $toc_letters) . '</h2></div></div><br>';
+	    $toc.='<div class="toccolours mw-collapsible '. $collapsed . '" data-expandtext="+" data-collapsetext="-" style="width:100%; display: table-cell; margin: 0.5em 0 0 2em"><h3>' . wfMessage( 'catlist-toc' )->plain() . '</h3><div class="mw-collapsible-content" style="text-align: center"><h2>'.implode(' ', $toc_letters) . '</h2></div></div><br>';
 	    }else{
 		$toc = '';
 	    }

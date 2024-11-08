@@ -6,6 +6,11 @@ The extension displays a list of pages designed with different templates for the
 
 The number of elements displayed is not controlled (although it is technically possible); all pages of the category are displayed on a single page.
 
+To install place extension conent into wiki's `extensions/` directory and add to `LocalSettings.php`:
+
+    `wfLoadExtension( 'CatList' );`
+
+
 Parameters in the opening tag:
 
 * __`caption`__ - Setting an alternative section title. After the `=` sign, the desired title text is specified in quotation marks. You can put a "template" __\_\_cat\_\___ in the title text, which will substitute a wiki link to the category. For example:
