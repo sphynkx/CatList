@@ -2,8 +2,10 @@
 
 ## work pages:
 ## https://lahwiki.sphynkx.org.ua/Категория:Женщины
+## https://lahwiki.sphynkx.org.ua/Категория:Мужчины
 ## https://lahwiki.sphynkx.org.ua/Tech:Тест_CatList
-## dont forget to revert them in prev.state
+## https://lahwiki.sphynkx.org.ua/Tech:Для_теста_CatList
+## !!Dont forget to revert them in prev.state
 
 use Wikimedia\Rdbms\IConnectionProvider;
 use MediaWiki\MediaWikiServices;
@@ -21,28 +23,29 @@ class CatListHooks {
 * Prepare namespace text - convert from numeric, set ucfirst()-like for cyrillic. Add colon if not NS_MAIN.
 * Also output "dump" of all namespaces
 */
-private static function getNsName($ns, $showList=0){
-    $nsList = array_flip(MediaWikiServices::getInstance()->getContentLanguage()->getNamespaceIds());
+    private static function getNsName($ns, $showList=0){
+	$nsList = array_flip(MediaWikiServices::getInstance()->getContentLanguage()->getNamespaceIds());
+	## For tag parameter 'shownamespaces'
+	if ($showList == 1){
+	    return print_r($nsList, true);
+	}
 
-    if ($showList == 1){
-	return print_r($nsList, true);
+	$ns = $nsList[$ns];
+	$ns = ($ns !== 0) ? mb_strtoupper(mb_substr($ns, 0, 1)).mb_substr($ns, 1).':' : '';
+	return $ns;
     }
 
-    $ns = $nsList[$ns];
-    $ns = ($ns !== 0) ? mb_strtoupper(mb_substr($ns, 0, 1)).mb_substr($ns, 1).':' : '';
-    return $ns;
-}
 
-
-
+/*
+* Base function
+*/
     public static function wfCatList( $input, array $args, Parser $parser, PPFrame $frame ) {
-## List of all namespaces
-    if ( isset($args['shownamespaces']) ) {
-	return self::getNsName('', 1);
-    }
+	## List of all namespaces (tag parameter 'shownamespaces')
+	if ( isset($args['shownamespaces']) ) {
+	    return self::getNsName('', 1);
+	}
 
-
-## Get category name from between of tags. Delete 'Category:' prefix
+	## Get category name from between of tags. Delete 'Category:' prefix
 	if( !isset( $input ) or $input === '' ) {
 	    $input = preg_replace('/.*?:/', '', $parser->getPage()->prefixedText);
 	}
@@ -52,49 +55,84 @@ private static function getNsName($ns, $showList=0){
 
 ## see also extensions/Translate_139/TranslateUtils.php:66
 ## about to get wikisrc of page
-
 	$itemCount = 0;
-	$outp = '';
+
+## Plug in the GoTop template
+	if (isset($args['gotop'])) {
+		$outp = $parser->recursiveTagParse( '{{Template:GoTop}}', $frame );
+	}else{$outp = '';}
+
+## Not used from here??
+#	$toc_letters = [];
+#	$toc_current = $toc_next = '';
+
 	foreach ($catPages as $cp) {
 	    $pt = preg_replace('/_/', ' ', $cp->page_title);
 
-## Prepare namespace text
+	    ## Prepare namespace text
 	    $ns = self::getNsName($cp->page_namespace);
-
 	    $thumb = self::getThumbItem($pt, $ns);
 
-#preg_match('/.*(Изображение)\=.*/m', $thumb['template'], $tplname);
-##preg_match('/(empty)/', $thumb['template'], $tplname);
-#$tpl = $thumb['template'];//trim($tplname[0]);
-
-
-
+	    ## Filter only pages with special infoboxes
 	    if (isset($args['templates'])) {
 		$tpls = preg_split('/,\s*/', $args['templates']);
-## The 'and..' need because pages w/o infoboxes will pass by self::getThumbItem($pt)['template']
-## doesnt filter by tpl		if ( in_array(self::getThumbItem($pt, $ns)['template'], $tpls, true) or isset($cp->page_namespace) ) {
+		## Filter by infoboxes and namespaces
 		if ( in_array($thumb['template'], $tpls) and isset($cp->page_namespace) ) {
+########### ToFix: repeated code
+	if (isset($args['toc'])) {
+	    $toc_current = mb_substr($pt, 0, 1);
+
+	    if( $toc_current !== $toc_next){
+		$toc_next = $toc_current;
+		$outp .='<a name="'.$toc_current.'"><h2>'. $toc_current . '</h2></a>';
+	    }
+	    $toc_letters[] = '<a href="#'.$toc_current.'">' . $toc_current . '</a>';
+	}
+########### /ToFix: repeated code
+
 		    $outp .= $parser->recursiveTagParse( $thumb['code'], $frame );
 		    $itemCount++;
 		}
 	    }
 	    else{
+########### ToFix: repeated code
+	if (isset($args['toc'])) {
+	    $toc_current = mb_substr($pt, 0, 1);
+
+	    if( $toc_current !== $toc_next){
+		$toc_next = $toc_current;
+		$outp .='<a name="'.$toc_current.'"><h2>'. $toc_current . '</h2></a>';
+	    }
+	    $toc_letters[] = '<a href="#'.$toc_current.'">' . $toc_current . '</a>';
+	}
+########### /ToFix: repeated code
+
 		$outp .= $parser->recursiveTagParse( $thumb['code'], $frame );
 		$itemCount++;
-	    }
-	}
 
-## Build the final ouput
+	    }
+	}## end of foreach
+
+	if (isset($args['toc'])) {
+	    $toc_letters = array_unique($toc_letters);
+	    $toc.='<div class="toccolours mw-collapsible mw-collapsed" data-expandtext="+" data-collapsetext="-" style="width:100%; display: table-cell; margin: 0.5em 0 0 2em"><h3>' . wfMessage( 'catlist-toc' )->plain() . '</h3><div class="mw-collapsible-content" style="text-align: center"><h2>'.implode(' ', $toc_letters) . '</h2></div></div><br>';
+	    }else{
+		$toc = '';
+	    }
+
+	## Build the final ouput
 	if( isset($args['caption']) ){
-	    $caption = '<h2>' . $args['caption'] . '</h2>' .
+	    $caption = '<h2>' . $parser->recursiveTagParse( $args['caption'], $frame ) . '</h2>' .
+		$toc .
 		$itemCount .
 		' ' . wfMessage( 'catlist-items' )->text() . '<br>';
-	    $caption = preg_replace('/\{\{cat\}\}/', trim($parser->recursiveTagParse( "[[:Category:".$input."|".$input."]]", $frame )), $caption);
+	    $caption = preg_replace('/__cat__/', trim($parser->recursiveTagParse( "[[:Category:".$input."|".$input."]]", $frame )), $caption);
 	}
 	else{
 	    $caption = '<h2>' . wfMessage( 'catlist-title' )->text() . ' '.
 	    trim($parser->recursiveTagParse( "[[:Category:".$input."|".$input."]]", $frame )) .
 		':</h2>' .
+		$toc .
 		$itemCount .
 		' ' . wfMessage( 'catlist-items' )->text() . '<br>';
 	}
@@ -104,6 +142,9 @@ private static function getNsName($ns, $showList=0){
 
 
 
+/*
+* Get pages list in certain category. Request to DB.
+*/
     public static function getCatPages($catName, $namespace = 0) {
 	$catName = preg_replace('/(.*?:)/', '', $catName);
 
@@ -126,15 +167,11 @@ private static function getNsName($ns, $showList=0){
 
 
 
-
 /*
 Func gets title of page (string), gets wikitext of page, catch some vars from infobox and generate thumb-box
 Returns array of code and infobx name
 */
     public static function getThumbItem($pageTitle, $nameSpace){
-## Set namespace as ucfirst for cyrillic. Add colon if not NS_MAIN
-###	$nameSpace = ($nameSpace !== '') ? mb_strtoupper(mb_substr($nameSpace, 0, 1)).mb_substr($nameSpace, 1).':' : '';
-
 	$title = Title::newFromText( $nameSpace.$pageTitle );
 
 	$pageTitle = trim($pageTitle);
@@ -168,7 +205,5 @@ EOD;
 
     return ['code' => $img, 'template' => $tplname];
     }
-
-
 
 }
