@@ -52,7 +52,6 @@ class CatListHooks {
 	## Set namespaces from tag parameter (as comma separated numeric values). Default is Main
 	$namespaces = isset( $args['namespaces'] ) ? $args['namespaces'] : '0';
 	$catPages = self::getCatPages($input, $namespaces); ## gets pages titles from SQL request
-
 ## see also extensions/Translate_139/TranslateUtils.php:66
 ## about to get wikisrc of page
 	$itemCount = 0;
@@ -77,7 +76,7 @@ class CatListHooks {
 	    if (isset($args['templates'])) {
 		$tpls = preg_split('/,\s*/', $args['templates']);
 		## Filter by infoboxes and namespaces
-		if ( in_array($thumb['template'], $tpls) and isset($cp->page_namespace) ) {
+		if ( in_array($thumb['template'], $tpls) or isset($cp->page_namespace) ) {
 ########### ToFix: repeated code
 	if (isset($args['toc'])) {
 	    $toc_current = mb_substr($pt, 0, 1);
