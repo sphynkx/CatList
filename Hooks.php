@@ -199,7 +199,7 @@ Returns array of code and infobx name
 	$img = (strlen( $img[1]) > 2 ) ? '[[File:' . trim($img[2]) : '[[File:Unknown-person.png';
 	$img = <<<EOD
 <div style="border: 10px solid $border; display: inline-block; width=20px; height=20px; margin: 1%; vertical-align: top;">
-$img|x150px|thumb|center|top|link=$nameSpace$pageTitle|<center>'''[[$nameSpace$pageTitle]]'''$syn$natsyn</center>]]
+$img|x170px|thumb|center|top|link=$nameSpace$pageTitle|<center>'''[[$nameSpace$pageTitle]]'''$syn$natsyn</center>]]
 </div>
 EOD;
 
