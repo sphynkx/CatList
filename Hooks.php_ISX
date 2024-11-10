@@ -53,23 +53,22 @@ class CatListHooks {
 	$namespaces = isset( $args['namespaces'] ) ? $args['namespaces'] : '0';
 	$catPages = self::getCatPages(preg_replace('/\s/','_',$input), $namespaces); ## gets pages titles from SQL request
 
+
 ## see also extensions/Translate_139/TranslateUtils.php:66
 ## about to get wikisrc of page
 	$itemCount = 0;
 
-    ## Plug in the GoTop template
+## Plug in the GoTop template
 	if (isset($args['gotop'])) {
 		$outp = $parser->recursiveTagParse( '{{Template:GoTop}}', $frame );
-	} 
-	else {
-	    $outp = ''; 
-	}
+	}else{$outp = '';}
 
 ## Not used from here??
 #	$toc_letters = [];
 #	$toc_current = $toc_next = '';
 
 	foreach ($catPages as $cp) {
+#echo '<p><br><p><br><p><br>$cp :'. print_r($cp, true);
 	    $pt = preg_replace('/_/', ' ', $cp->page_title);
 
 	    ## Prepare namespace text
@@ -80,19 +79,39 @@ class CatListHooks {
 	    if (isset($args['templates'])) {
 		$tpls = preg_split('/,\s*/', $args['templates']);
 		## Filter by infoboxes and namespaces
-		if ( isset($thumb['template']) and in_array($thumb['template'], $tpls) ) {
-		    if (isset($args['toc'])) {
-			$toc_current = mb_substr($pt, 0, 1);
+		if ( in_array($thumb['template'], $tpls) or isset($cp->page_namespace) ) {
+########### ToFix: repeated code
+	if (isset($args['toc'])) {
+	    $toc_current = mb_substr($pt, 0, 1);
 
-			if( $toc_current !== $toc_next){
-			    $toc_next = $toc_current;
-			    $outp .='<a name="'.$toc_current.'"><h2>'. $toc_current . '</h2></a>';
-			}
-			$toc_letters[] = '<a href="#'.$toc_current.'">' . $toc_current . '</a>';
-		    }
+	    if( $toc_current !== $toc_next){
+		$toc_next = $toc_current;
+		$outp .='<a name="'.$toc_current.'"><h2>'. $toc_current . '</h2></a>';
+	    }
+	    $toc_letters[] = '<a href="#'.$toc_current.'">' . $toc_current . '</a>';
+	}
+########### /ToFix: repeated code
+
 		    $outp .= $parser->recursiveTagParse( $thumb['code'], $frame );
 		    $itemCount++;
 		}
+	    }
+	    else{
+########### ToFix: repeated code
+	if (isset($args['toc'])) {
+	    $toc_current = mb_substr($pt, 0, 1);
+
+	    if( $toc_current !== $toc_next){
+		$toc_next = $toc_current;
+		$outp .='<a name="'.$toc_current.'"><h2>'. $toc_current . '</h2></a>';
+	    }
+	    $toc_letters[] = '<a href="#'.$toc_current.'">' . $toc_current . '</a>';
+	}
+########### /ToFix: repeated code
+
+		$outp .= $parser->recursiveTagParse( $thumb['code'], $frame );
+		$itemCount++;
+
 	    }
 	}## end of foreach
 
@@ -100,7 +119,7 @@ class CatListHooks {
 	    $collapsed = ($args['toc']=='collapsed') ? 'mw-collapsed' : '';
 	    $toc_letters = array_unique($toc_letters);
 	    $toc.='<div class="toccolours mw-collapsible '. $collapsed . '" data-expandtext="+" data-collapsetext="-" style="width:100%; display: table-cell; margin: 0.5em 0 0 2em"><h3>' . wfMessage( 'catlist-toc' )->plain() . '</h3><div class="mw-collapsible-content" style="text-align: center"><h2>'.implode(' ', $toc_letters) . '</h2></div></div><br>';
-	    } else {
+	    }else{
 		$toc = '';
 	    }
 
@@ -112,7 +131,7 @@ class CatListHooks {
 		' ' . wfMessage( 'catlist-items' )->text() . '<br>';
 	    $caption = preg_replace('/__cat__/', trim($parser->recursiveTagParse( "[[:Category:".$input."|".$input."]]", $frame )), $caption);
 	}
-	else {
+	else{
 	    $caption = '<h2>' . wfMessage( 'catlist-title' )->text() . ' '.
 	    trim($parser->recursiveTagParse( "[[:Category:".$input."|".$input."]]", $frame )) .
 		':</h2>' .
@@ -166,9 +185,9 @@ Returns array of code and infobx name
 	$wikitext = preg_replace('/\n/','', $wikitext);
 	$wikitext = preg_replace('/<!--.*?-->/iu','', $wikitext);
 
-	preg_match('/{{(.*?)\|/', $wikitext, $tplname, PREG_UNMATCHED_AS_NULL);
+	preg_match('/{{(.*?)\|/', $wikitext, $tplname);
 	$tplname = trim($tplname[1]);
-	if ( mb_strlen($tplname) > 20 ){ $tplname = 'empty'; } ## Ugly bugfix - when tplname was absent in page..
+
 	preg_match('/^.*?\|\s*?Синонимы\s*?=(.*?)\|/u', $wikitext, $syn);
 	$syn = (strlen( $syn[1]) > 2 ) ? '<hr>([['. preg_replace('/;\s?/', ']]; [[', trim($syn[1])) . ']])' : '';
 
