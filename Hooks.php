@@ -71,29 +71,28 @@ class CatListHooks {
 
 	foreach ($catPages as $cp) {
 	    $pt = preg_replace('/_/', ' ', $cp->page_title);
-
 	    ## Prepare namespace text
 	    $ns = self::getNsName($cp->page_namespace);
 	    $thumb = self::getThumbItem($pt, $ns);
 
 	    ## Filter only pages with special infoboxes
-	    if (isset($args['templates'])) {
-		$tpls = preg_split('/,\s*/', $args['templates']);
-		## Filter by infoboxes and namespaces
-		if ( isset($thumb['template']) and in_array($thumb['template'], $tpls) ) {
-		    if (isset($args['toc'])) {
-			$toc_current = mb_substr($pt, 0, 1);
-
-			if( $toc_current !== $toc_next){
-			    $toc_next = $toc_current;
-			    $outp .='<a name="'.$toc_current.'"><h2>'. $toc_current . '</h2></a>';
-			}
-			$toc_letters[] = '<a href="#'.$toc_current.'">' . $toc_current . '</a>';
-		    }
-		    $outp .= $parser->recursiveTagParse( $thumb['code'], $frame );
-		    $itemCount++;
-		}
+	    if ( isset($args['templates']) and is_array($tpls) and !in_array($thumb['template'], $tpls) ) {
+		continue; 
 	    }
+	    $tpls = preg_split('/,\s*/', $args['templates']);
+
+	    ## Filter by infoboxes and namespaces
+	    if (isset($args['toc'])) {
+		$toc_current = mb_substr($pt, 0, 1);
+
+		if( $toc_current !== $toc_next){
+		    $toc_next = $toc_current;
+		    $outp .='<a name="'.$toc_current.'"><h2>'. $toc_current . '</h2></a>';
+		}
+		$toc_letters[] = '<a href="#'.$toc_current.'">' . $toc_current . '</a>';
+	    }
+	    $outp .= $parser->recursiveTagParse( $thumb['code'], $frame );
+	    $itemCount++;
 	}## end of foreach
 
 	if (isset($args['toc'])) {
