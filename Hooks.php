@@ -51,7 +51,9 @@ class CatListHooks {
 	}
 	## Set namespaces from tag parameter (as comma separated numeric values). Default is Main
 	$namespaces = isset( $args['namespaces'] ) ? $args['namespaces'] : '0';
-	$catPages = self::getCatPages($input, $namespaces); ## gets pages titles from SQL request
+	$catPages = self::getCatPages(preg_replace('/\s/','_',$input), $namespaces); ## gets pages titles from SQL request
+
+
 ## see also extensions/Translate_139/TranslateUtils.php:66
 ## about to get wikisrc of page
 	$itemCount = 0;
@@ -66,6 +68,7 @@ class CatListHooks {
 #	$toc_current = $toc_next = '';
 
 	foreach ($catPages as $cp) {
+#echo '<p><br><p><br><p><br>$cp :'. print_r($cp, true);
 	    $pt = preg_replace('/_/', ' ', $cp->page_title);
 
 	    ## Prepare namespace text
