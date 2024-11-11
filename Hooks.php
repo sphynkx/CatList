@@ -66,8 +66,8 @@ class CatListHooks {
 	}
 
 ## Not used from here??
-#	$toc_letters = [];
-#	$toc_current = $toc_next = '';
+	$toc_letters = [];
+	$toc_current = $toc_next = '';
 
 	foreach ($catPages as $cp) {
 	    $pt = preg_replace('/_/', ' ', $cp->page_title);
@@ -75,7 +75,7 @@ class CatListHooks {
 	    $ns = self::getNsName($cp->page_namespace);
 	    $thumb = self::getThumbItem($pt, $ns);
 
-	    $tpls = preg_split('/,\s*/', $args['templates']); ## moved from down. Fixed sudded appearence of 1st shufflw item
+	    $tpls = preg_split('/,\s*/', $args['templates']); ## moved from down. Fixed sudded appearence of 1st shuffle item
 
 	    ## Filter only pages with special infoboxes
 ###	    if ( isset($args['templates']) and is_array($tpls) and !in_array($thumb['template'], $tpls) ) {
