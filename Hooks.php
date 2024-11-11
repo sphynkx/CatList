@@ -75,16 +75,18 @@ class CatListHooks {
 	    $ns = self::getNsName($cp->page_namespace);
 	    $thumb = self::getThumbItem($pt, $ns);
 
+	    $tpls = preg_split('/,\s*/', $args['templates']); ## moved from down. Fixed sudded appearence of 1st shufflw item
+
 	    ## Filter only pages with special infoboxes
 ###	    if ( isset($args['templates']) and is_array($tpls) and !in_array($thumb['template'], $tpls) ) {
 	    if ( isset($args['templates']) and is_array($tpls) and !in_array( preg_replace('/.*?:/', '', $thumb['template']), $tpls ) ) {
-#echo '<p><br><p><br><p><br>PASSED: ' . print_r($tpls, true).$cp->page_title.$thumb['template'] ;
+#echo '<p><br><p><br><p><br>FILTERED: ' . print_r($tpls, true).$cp->page_title.$thumb['template'] ;
 		continue; 
 	    }
-	    $tpls = preg_split('/,\s*/', $args['templates']);
+##	    $tpls = preg_split('/,\s*/', $args['templates']); ## moved upper
 	    $thumb['template'] = preg_replace('/.*?:/', '', $thumb['template']); ## 10yrs old error in templates discovered by ext =)))
-#echo '<p><br><p><br><p><br>tplz: ' . print_r($tpls, true).$cp->page_title.$thumb['template'] ;
-
+#echo '<p><br><p><br><p><br><b>PASSED</b>: ' . print_r($tpls, true).$cp->page_title.$thumb['template'] ;
+#echo '&nbsp;&nbsp;&nbsp;in: '. print_r( in_array( preg_replace('/.*?:/', '', $thumb['template']), $tpls), true);
 	    ## Filter by infoboxes and namespaces
 	    if (isset($args['toc'])) {
 		$toc_current = mb_substr($pt, 0, 1);
