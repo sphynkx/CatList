@@ -65,12 +65,17 @@ class CatListHooks {
 	    $outp = ''; 
 	}
 
-## Not used from here??
 	$toc_letters = [];
 	$toc_current = $toc_next = '';
 
 	foreach ($catPages as $cp) {
 	    $pt = preg_replace('/_/', ' ', $cp->page_title);
+
+	    ## Filter self-inclusion
+	    if ( $input === $pt){
+		continue;
+	    }
+
 	    ## Prepare namespace text
 	    $ns = self::getNsName($cp->page_namespace);
 	    $thumb = self::getThumbItem($pt, $ns);
