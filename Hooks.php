@@ -76,10 +76,14 @@ class CatListHooks {
 	    $thumb = self::getThumbItem($pt, $ns);
 
 	    ## Filter only pages with special infoboxes
-	    if ( isset($args['templates']) and is_array($tpls) and !in_array($thumb['template'], $tpls) ) {
+###	    if ( isset($args['templates']) and is_array($tpls) and !in_array($thumb['template'], $tpls) ) {
+	    if ( isset($args['templates']) and is_array($tpls) and !in_array( preg_replace('/.*?:/', '', $thumb['template']), $tpls ) ) {
+#echo '<p><br><p><br><p><br>PASSED: ' . print_r($tpls, true).$cp->page_title.$thumb['template'] ;
 		continue; 
 	    }
 	    $tpls = preg_split('/,\s*/', $args['templates']);
+	    $thumb['template'] = preg_replace('/.*?:/', '', $thumb['template']); ## 10yrs old error in templates discovered by ext =)))
+#echo '<p><br><p><br><p><br>tplz: ' . print_r($tpls, true).$cp->page_title.$thumb['template'] ;
 
 	    ## Filter by infoboxes and namespaces
 	    if (isset($args['toc'])) {
