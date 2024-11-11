@@ -173,11 +173,15 @@ Returns array of code and infobx name
 
 	preg_match('/{{(.*?)\|/', $wikitext, $tplname, PREG_UNMATCHED_AS_NULL);
 	$tplname = trim($tplname[1]);
-	if ( mb_strlen($tplname) > 20 ){ $tplname = 'empty'; } ## Ugly bugfix - when tplname was absent in page..
+	if ( mb_strlen($tplname) > 20 ){
+	    $tplname = 'empty';
+	} ## Ugly bugfix - when tplname was absent in page..
 	preg_match('/^.*?\|\s*?Синонимы\s*?=(.*?)\|/u', $wikitext, $syn);
+	$syn = preg_replace( '/.*:/', '', $syn ); ## preserve affect to interwiki mrchanizms
 	$syn = (strlen( $syn[1]) > 2 ) ? '<hr>([['. preg_replace('/;\s?/', ']]; [[', trim($syn[1])) . ']])' : '';
 
 	preg_match('/^.*?\|\s*?НатСинонимы\s*?=(.*?)\|/u', $wikitext, $natsyn);
+	$natsyn = preg_replace( '/.*:/', '', $natsyn ); ## preserve affect to interwiki mrchanizms
 	$natsyn = (strlen( $natsyn[1]) > 2 ) ? '<hr>([['. preg_replace('/;\s?/', ']]; [[', trim($natsyn[1])) . ']])' : '';
 
 	preg_match('/\|\s?Историческая\s+=(.*?)\|/', $wikitext, $hist);
