@@ -12,10 +12,13 @@ To install place extension conent into wiki's `extensions/` directory and add to
 
 
 Parameters in the opening tag:
+* __`addcats`__ - For persons pages. Include objects from parameter `характеристики` of __Person__ template. No need modifiers.
 
 * __`caption`__ - Setting an alternative section title. After the `=` sign, the desired title text is specified in quotation marks. You can put a "template" __\_\_cat\_\___ in the title text, which will substitute a wiki link to the category. For example:
  
-    `<catlist caption="My caption for {{cat}}:">Guatemala</catlist>`
+    `<catlist caption="My caption for __cat__:">Guatemala</catlist>`
+
+    If you need to remove section title completely, set an empty quotes.
 
     You can also use wiki formatting, but be careful. If you use font formatting (single quotes), make sure that the modifier content is enclosed in double quotes. Do not use HTML tag formatting - it causes rendering failure. If you really need to use HTML tags, then you need to replace the `<` and `>` symbols with `&lt;` and `&gt;` respectively. But no guarantees. It was not possible to make such a replacement at the extension code stage - probably an engine bug.
 
