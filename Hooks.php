@@ -68,7 +68,16 @@ class CatListHooks {
 	$toc_letters = [];
 	$toc_current = $toc_next = '';
 
+#foreach ($catPages as $cp){echo '<p><br><p><br><p><br>catPages: ' . print_r($cp->page_title, true);}
+
+	if( isset( $args['addcats'] )){
+	    $catPages = self::getAddedCategories(preg_replace('/\s/','_',$input), $namespaces);
+#	foreach ($catPages as $cp){ echo '<p><br><p><br><p><br>IF: ' . print_r($cp->page_title, true);}
+	}
+
+
 	foreach ($catPages as $cp) {
+###echo '<p><br><p><br><p><br>FOREACH: ' . print_r($cp->page_title, true). print_r($cp->page_namespace, true);
 	    $pt = preg_replace('/_/', ' ', $cp->page_title);
 
 	    ## Filter self-inclusion
@@ -83,12 +92,10 @@ class CatListHooks {
 	    $tpls = preg_split('/,\s*/', $args['templates']); ## moved from down. Fixed sudded appearence of 1st shuffle item
 
 	    ## Filter only pages with special infoboxes
-###	    if ( isset($args['templates']) and is_array($tpls) and !in_array($thumb['template'], $tpls) ) {
 	    if ( isset($args['templates']) and is_array($tpls) and !in_array( preg_replace('/.*?:/', '', $thumb['template']), $tpls ) ) {
 #echo '<p><br><p><br><p><br>FILTERED: ' . print_r($tpls, true).$cp->page_title.$thumb['template'] ;
 		continue; 
 	    }
-##	    $tpls = preg_split('/,\s*/', $args['templates']); ## moved upper
 	    $thumb['template'] = preg_replace('/.*?:/', '', $thumb['template']); ## 10yrs old error in templates discovered by ext =)))
 #echo '<p><br><p><br><p><br><b>PASSED</b>: ' . print_r($tpls, true).$cp->page_title.$thumb['template'] ;
 #echo '&nbsp;&nbsp;&nbsp;in: '. print_r( in_array( preg_replace('/.*?:/', '', $thumb['template']), $tpls), true);
@@ -172,6 +179,7 @@ Returns array of code and infobx name
 	$store = MediaWikiServices::getInstance()->getRevisionStoreFactory()->getRevisionStore( );
 	$rev = $store->getRevisionByTitle( $title );
 	$wikitext = $rev ? $rev->getContent( SlotRecord::MAIN )->getText() : null;
+#echo "<p><br><p><br><p><br>AddCats: $title :: ". print_r($rev, true) . 'ENDE';
 
 	$wikitext = preg_replace('/\n/','', $wikitext);
 	$wikitext = preg_replace('/<!--.*?-->/iu','', $wikitext);
@@ -204,4 +212,46 @@ EOD;
     return ['code' => $img, 'template' => $tplname];
     }
 
+
+
+/* 
+* Generates list of object from all categories that plugged to page (parameter 'addcats')
+* Imitate output of getCatPages() for compability
+*/
+    public static function getAddedCategories($pageTitle, $nameSpace){
+	$title = Title::newFromText( preg_replace('/_/',' ', $pageTitle) );
+
+	$pageTitle = trim($pageTitle);
+	$store = MediaWikiServices::getInstance()->getRevisionStoreFactory()->getRevisionStore( );
+	$rev = $store->getRevisionByTitle( $title );
+	$wikitext = $rev ? $rev->getContent( SlotRecord::MAIN )->getText() : null;
+
+	$wikitext = preg_replace('/\n/','', $wikitext);
+	$wikitext = preg_replace('/<!--.*?-->/iu','', $wikitext);
+
+	preg_match_all('/\[\[Category:(.*?)\]\]/', $wikitext, $cats, PREG_UNMATCHED_AS_NULL);
+#echo "<p><br><p><br><p><br>$pageTitle, $nameSpace=AddCats: $title :: <pre>". print_r($cats, true) . '</pre>ENDE';
+	sort($cats[1]);
+	$getcats = array_filter($cats[1], function($x){return Title::newFromText($x)->getLatestRevID()>0;} );
+
+	foreach($getcats as $gc){
+	    $cpt = new CatPagesTmp();
+	    $cpt->page_title = $gc;
+	    $cpt->page_namespace = '0';
+	    $getcats_objs[] = $cpt;
+	}
+#		echo "<p><br><p><br><p><br> allCat: <pre>" . print_r($getcats_objs, true) . '</pre>';
+    return $getcats_objs;
+    }
+
+}
+
+class CatPagesTmp {
+/* 
+* Dummy class for imitation of getCatPages() output.. and transmission parameters as class properties.
+* Used in CatListHooks::getAddedCategories()
+* See lines before foreach() in wfCatList()
+*/
+    public $page_title = '';
+    public $page_namespace = '';
 }
