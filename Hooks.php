@@ -71,7 +71,7 @@ class CatListHooks {
 #foreach ($catPages as $cp){echo '<p><br><p><br><p><br>catPages: ' . print_r($cp->page_title, true);}
 
 	if( isset( $args['addcats'] )){
-	    $catPages = self::getAddedCategories(preg_replace('/\s/','_',$input), $namespaces);
+	    $catPages = self::getAddedCategories(preg_replace('/\s/','_',$input), $namespaces, $catPages);
 #	foreach ($catPages as $cp){ echo '<p><br><p><br><p><br>IF: ' . print_r($cp->page_title, true);}
 	}
 
@@ -218,7 +218,7 @@ EOD;
 * Generates list of object from all categories that plugged to page (parameter 'addcats')
 * Imitate output of getCatPages() for compability
 */
-    public static function getAddedCategories($pageTitle, $nameSpace){
+    public static function getAddedCategories($pageTitle, $nameSpace, $catPages){
 	$title = Title::newFromText( preg_replace('/_/',' ', $pageTitle) );
 
 	$pageTitle = trim($pageTitle);
@@ -251,6 +251,15 @@ EOD;
 	    $cpt->page_namespace = '0';
 	    $getcats_objs[] = $cpt;
 	}
+
+	## Add objects from original catPages obj also..
+	foreach($catPages as $orig_cp){
+	    $cpt = new CatPagesTmp();
+	    $cpt->page_title = $orig_cp->page_title;
+	    $cpt->page_namespace = $orig_cp->namespace;
+	    $getcats_objs[] = $cpt;
+	}
+	sort($getcats_objs);
 #		echo "<p><br><p><br><p><br> allCat: <pre>" . print_r($getcats_objs, true) . '</pre>';
     return $getcats_objs;
     }
