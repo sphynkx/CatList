@@ -226,11 +226,22 @@ EOD;
 	$rev = $store->getRevisionByTitle( $title );
 	$wikitext = $rev ? $rev->getContent( SlotRecord::MAIN )->getText() : null;
 
+	## Add misc objects from infobox also
+	preg_match('/\|.*?причастность.*?\=(.*?)[\|\}]/ms', $wikitext, $add_themes);
+	$add_themes = explode("\n", $add_themes[1]);
+#echo "<p><br><p><br><p><br>Exploded: <pre>". print_r($add_themes, true) . '</pre>ENDE';
+
 	$wikitext = preg_replace('/\n/','', $wikitext);
 	$wikitext = preg_replace('/<!--.*?-->/iu','', $wikitext);
 
 	preg_match_all('/\[\[Category:(.*?)\]\]/', $wikitext, $cats, PREG_UNMATCHED_AS_NULL);
-#echo "<p><br><p><br><p><br>$pageTitle, $nameSpace=AddCats: $title :: <pre>". print_r($cats, true) . '</pre>ENDE';
+
+	## Add infobox items to result array
+	$cats[1] = array_merge($cats[1], $add_themes);
+	$cats[1] = array_unique($cats[1]);
+	$cats[1] = array_filter($cats[1], function($x){return $x>0;} );
+##echo "<p><br><p><br><p><br>$pageTitle, $nameSpace=AddCats: $title :: <pre>". print_r($cats, true) . '</pre>ENDE';
+
 	sort($cats[1]);
 	$getcats = array_filter($cats[1], function($x){return Title::newFromText($x)->getLatestRevID()>0;} );
 
