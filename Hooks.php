@@ -106,15 +106,19 @@ class CatListHooks {
 	    $thumb['template'] = preg_replace('/.*?:/', '', $thumb['template']); ## 10yrs old error in templates discovered by ext =)))
 #echo '<p><br><p><br><p><br><b>PASSED</b>: ' . print_r($tpls, true).$cp->page_title.$thumb['template'] ;
 #echo '&nbsp;&nbsp;&nbsp;in: '. print_r( in_array( preg_replace('/.*?:/', '', $thumb['template']), $tpls), true);
+
+
+	    $sect_id = (isset($args['sect_id'])) ? $args['sect_id'] . '_' : '';
+
 	    ## Filter by infoboxes and namespaces
 	    if (isset($args['toc'])) {
 		$toc_current = mb_substr($pt, 0, 1);
 
 		if( $toc_current !== $toc_next){
 		    $toc_next = $toc_current;
-		    $outp .='<a name="'.$toc_current.'"><h2>'. $toc_current . '</h2></a>';
+		    $outp .='<a name="' . $sect_id . $toc_current . '"><h2>'. $toc_current . '</h2></a>';
 		}
-		$toc_letters[] = '<a href="#'.$toc_current.'">' . $toc_current . '</a>';
+		$toc_letters[] = '<a href="#' . $sect_id . $toc_current . '">' . $toc_current . '</a>';
 	    }
 	    $outp .= $parser->recursiveTagParse( $thumb['code'], $frame );
 	    $itemCount++;
