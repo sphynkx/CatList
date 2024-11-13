@@ -75,8 +75,15 @@ class CatListHooks {
 #	foreach ($catPages as $cp){ echo '<p><br><p><br><p><br>IF: ' . print_r($cp->page_title, true);}
 	}
 
-
+	$prev_title = '';
 	foreach ($catPages as $cp) {
+	    ## Remove duplicates
+	    if ($prev_title == $cp->page_title){
+		continue;
+	    }
+	    $prev_title = $cp->page_title;
+
+###	foreach ($catPages as $cp) {
 ###echo '<p><br><p><br><p><br>FOREACH: ' . print_r($cp->page_title, true). print_r($cp->page_namespace, true);
 	    $pt = preg_replace('/_/', ' ', $cp->page_title);
 
