@@ -197,15 +197,23 @@ Returns array of code and infobx name
 
 	preg_match('/{{(.*?)\|/', $wikitext, $tplname, PREG_UNMATCHED_AS_NULL);
 	$tplname = trim($tplname[1]);
+
+	## Alternatively for pages of Subtitle namespace generate thumbs in other manner..
+	if ($tplname == 'empty'){
+	    $img = self::getSubtitlesThumbItem($pageTitle, $nameSpace, $wikitext);
+	    return ['code' => $img, 'template' => $tplname];
+	}
+
+	## Ugly bugfix - when tplname was absent in page..
 	if ( mb_strlen($tplname) > 20 ){
 	    $tplname = 'empty';
-	} ## Ugly bugfix - when tplname was absent in page..
+	}
 	preg_match('/^.*?\|\s*?Синонимы\s*?=(.*?)\|/u', $wikitext, $syn);
 	$syn = preg_replace( '/.*:/', '', $syn ); ## preserve affect to interwiki mrchanizms
 	$syn = (strlen( $syn[1]) > 2 ) ? '<hr>([['. preg_replace('/;\s?/', ']]; [[', trim($syn[1])) . ']])' : '';
 
 	preg_match('/^.*?\|\s*?НатСинонимы\s*?=(.*?)\|/u', $wikitext, $natsyn);
-	$natsyn = preg_replace( '/.*:/', '', $natsyn ); ## preserve affect to interwiki mrchanizms
+	$natsyn = preg_replace( '/.*:/', '', $natsyn ); ## preserve affect to interwiki mechanizms
 	$natsyn = (strlen( $natsyn[1]) > 2 ) ? '<hr>([['. preg_replace('/;\s?/', ']]; [[', trim($natsyn[1])) . ']])' : '';
 
 	preg_match('/\|\s?Историческая\s+=(.*?)\|/', $wikitext, $hist);
@@ -222,6 +230,39 @@ EOD;
 
     return ['code' => $img, 'template' => $tplname];
     }
+
+
+
+
+/*
+* Alternatively generates thumbs for pages in Subtitle namespace.
+*/
+    public static function getSubtitlesThumbItem($pageTitle, $nameSpace, $wikitext){
+	$max_width = '170px';
+	$wikitext = preg_replace('/.*\{\{empty(.*?)\}\}.*/m', '$1', $wikitext);
+	preg_match('/.*?\|\s*?pict\s*?=\s*?(.*?)\|.*?title\s.*?=(.*?)\|.*?channel_name\s.*?=(.*?)\|.*?channel_url\s.*?=(.*?)\|.*?date\s.*?=(.*?)\|.*?time\s.*?=(.*?)$/', $wikitext, $tpl_match);
+
+	$channel= '[' . trim($tpl_match[4]) .' ' . trim($tpl_match[3]) . ']';
+	$date = trim($tpl_match[5]);
+	$time = trim($tpl_match[6]);
+
+	$img = <<<EOD
+<div style="background-color: #f8f9fa; border: 0.1em solid lightgray; padding: 5px; text-align: center; display: inline-block; word-wrap: break-any; width=200px; max-width: 200px; height=20px; margin: 1%; vertical-align: top;">
+[[$nameSpace$pageTitle|
+<html><img src=$tpl_match[1] width="$max_width" title="$tpl_match[2]">
+<center><sup>$nameSpace$pageTitle</sup>
+<h4>$tpl_match[2]</h4>
+</center>
+</html>]]<center>
+$date<br>$channel<br>$time
+</center>
+</div>
+EOD;
+##echo "<p><br><p><br><p><br>subtitle: '. $pageTitle.<pre>$wikitext" . print_r($tpl_match, true) ."</pre>"; #
+    return $img;
+    }
+
+
 
 
 
@@ -280,6 +321,9 @@ EOD;
     }
 
 }
+
+
+
 
 class CatPagesTmp {
 /* 
