@@ -251,10 +251,11 @@ EOD;
 	$cats[1] = array_merge($cats[1], $add_themes);
 	$cats[1] = array_unique($cats[1]);
 	$cats[1] = array_filter($cats[1], function($x){return $x>0;} );
-##echo "<p><br><p><br><p><br>$pageTitle, $nameSpace=AddCats: $title :: <pre>". print_r($cats, true) . '</pre>ENDE';
+#echo "<p><br><p><br><p><br>\$pageTitle, \$nameSpace=AddCats: $title :: <pre>". print_r($cats, true) . '</pre>ENDE';
 
 	sort($cats[1]);
-	$getcats = array_filter($cats[1], function($x){return Title::newFromText($x)->getLatestRevID()>0;} );
+	## Fixed: Raised error (null array item) if category page exists but same name page doesnt exist
+	$getcats = array_filter($cats[1], function($x){return (Title::newFromText($x)->getLatestRevID()>0 or Title::newFromText('Category:'.$x)->getLatestRevID()>0);} );
 
 	foreach($getcats as $gc){
 	    $cpt = new CatPagesTmp();
@@ -270,8 +271,8 @@ EOD;
 	    $cpt->page_namespace = $orig_cp->namespace;
 	    $getcats_objs[] = $cpt;
 	}
+echo "<p><br><p><br><p><br> allCat: <pre>" . print_r($getcats_objs, true) . '</pre>';
 	sort($getcats_objs);
-#		echo "<p><br><p><br><p><br> allCat: <pre>" . print_r($getcats_objs, true) . '</pre>';
     return $getcats_objs;
     }
 
