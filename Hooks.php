@@ -241,7 +241,7 @@ EOD;
 	$max_width = '170px';
 	$wikitext = preg_replace('/.*\{\{empty(.*?)\}\}.*/m', '$1', $wikitext);
 	preg_match('/.*?\|\s*?pict\s*?=\s*?(.*?)\|.*?title\s.*?=(.*?)\|.*?channel_name\s.*?=(.*?)\|.*?channel_url\s.*?=(.*?)\|.*?date\s.*?=(.*?)\|.*?time\s.*?=(.*?)$/', $wikitext, $tpl_match);
-
+	$tpl_match[4] = preg_replace('/http\:/', 'https:', $tpl_match[4]);
 	$channel= '[' . trim($tpl_match[4]) .' ' . trim($tpl_match[3]) . ']';
 	$date = trim($tpl_match[5]);
 	$time = trim($tpl_match[6]);
