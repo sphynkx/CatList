@@ -96,7 +96,12 @@ class CatListHooks {
 	    $ns = self::getNsName($cp->page_namespace);
 	    $thumb = self::getThumbItem($pt, $ns);
 
-	    $tpls = preg_split('/,\s*/', $args['templates']); ## moved from down. Fixed sudded appearence of 1st shuffle item
+//	    $tpls = preg_split('/,\s*/', $args['templates']); ## moved from down. Fixed sudded appearence of 1st shuffle item
+	if (isset($args['templates'])) {
+	    $tpls = preg_split('/,\s*/', $args['templates']);
+	} else {
+	    $tpls = [];
+	}
 
 	    ## Filter only pages with special infoboxes
 	    if ( isset($args['templates']) and is_array($tpls) and !in_array( preg_replace('/.*?:/', '', $thumb['template']), $tpls ) ) {
