@@ -218,7 +218,8 @@ Returns array of code and infobx name
 
 	preg_match('/\|\s?Историческая\s+=(.*?)\|/', $wikitext, $hist);
 	preg_match('/\|\s*?Дата\sсмерти\s*?=(.*?)\|/u', $wikitext, $ddate);
-	$border = ($hist[1] ==1) ? 'gold' : (strlen($ddate[1])>2 ? '#777777' : '#ffffff');
+//	$border = ($hist[1] ==1) ? 'gold' : (strlen($ddate[1])>2 ? '#777777' : '#ffffff');
+	$border = (isset($hist[1]) && $hist[1] == 1) ? 'gold' : ((isset($ddate[1]) && strlen($ddate[1]) > 2) ? '#777777' : '#ffffff');
 
 	preg_match('/(Изображение\s+=\s*)(.*?)\|/', $wikitext, $img);
 	$img = (strlen( $img[1]) > 2 ) ? '[[File:' . trim($img[2]) : '[[File:Unknown-person.png';
