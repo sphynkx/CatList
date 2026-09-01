@@ -157,7 +157,7 @@ class CatListHooks {
 /*
 * Get pages list in certain category. Request to DB.
 */
-    public static function getCatPages($catName, $namespace = 0) {
+    public static function getCatPages_OLD($catName, $namespace = 0) {
 	$catName = preg_replace('/(.*?:)/', '', $catName);
 
 ##	$dbr = wfGetDB( DB_REPLICA ); ## Deprecated
@@ -175,6 +175,34 @@ class CatListHooks {
 	);
 	return $db_outp; ## array of pages
     }
+
+public static function getCatPages($catName, $namespace = 0) {
+    $catName = preg_replace('/(.*?:)/', '', $catName);
+
+    $services = MediaWikiServices::getInstance();
+    $dbr = method_exists($services, 'getConnectionProvider')
+        ? $services->getConnectionProvider()->getReplicaDatabase()
+        : $services->getDBLoadBalancer()->getConnection(DB_REPLICA);
+
+    $namespaceIds = array_map('intval', explode(',', trim($namespace)));
+
+    $db_outp = $dbr->select(
+        ['categorylinks', 'page'],
+        ['categorylinks.cl_from', 'categorylinks.cl_to', 'categorylinks.cl_type',
+         'page.page_title', 'page.page_namespace', 'page.page_id AS page_id'],
+        [
+            'cl_to' => $catName,
+            'page.page_namespace' => $namespaceIds,
+        ],
+        __METHOD__,
+        ['ORDER BY' => 'page.page_title ASC'],
+        [
+            'page' => ['JOIN', 'page.page_id = categorylinks.cl_from'],
+        ]
+    );
+
+    return $db_outp;
+}
 
 
 
