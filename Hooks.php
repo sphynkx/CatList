@@ -309,7 +309,21 @@ EOD;
 
 	$wikitext = preg_replace('/\n/','', $wikitext);
 	$wikitext = preg_replace('/<!--.*?-->/iu','', $wikitext);
-	preg_match_all('/\[\[Category:(.*?)\]\]/', $wikitext, $cats, PREG_UNMATCHED_AS_NULL);
+	## FIXED: was hardcoded to the English "Category:" keyword only, so
+	## it never matched raw wikitext written with a localized alias
+	## (e.g. "Категория:" on a Russian-language wiki) - the actual text
+	## an editor typed, not what's stored normalized in the DB (that's
+	## what getCatPages() reads instead, which is why the first,
+	## non-addcats block was never affected by this). Now builds the
+	## alternation from whatever this wiki's NS_CATEGORY actually
+	## resolves to, plus the English canonical name as an always-valid
+	## fallback (MediaWiki accepts it as an alias on every wiki).
+	$catNsNames = array_unique(array_filter([
+	  'Category',
+	  MediaWikiServices::getInstance()->getContentLanguage()->getNsText(NS_CATEGORY),
+	]));
+	$catNsPattern = implode('|', array_map(function($n){ return preg_quote($n, '/'); }, $catNsNames));
+	preg_match_all('/\[\[(?:' . $catNsPattern . '):(.*?)\]\]/u', $wikitext, $cats, PREG_UNMATCHED_AS_NULL);
 
 	## Add infobox items to result array
 	$cats[1] = array_merge($cats[1] ?? [], $add_themes);
