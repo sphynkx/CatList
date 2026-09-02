@@ -33,6 +33,31 @@ class CatListHooks {
   }
 
   /*
+  * Strips a leading namespace prefix from $text - ONLY if the part
+  * before the first colon matches a namespace name/alias this wiki
+  * actually has registered (in any configured language, e.g.
+  * "Категория"/"Category", "Шаблон"/"Template"). Anchored to the very
+  * start of the string, so a colon anywhere else in $text - part of a
+  * real page/category/template name, e.g. "Иванов: Биография" or
+  * "Компания (ООО): Филиал" - is left completely untouched.
+  *
+  * Replaces four call sites that previously used
+  * preg_replace('/.*?:/', '', $text), which blindly stripped
+  * everything up to the FIRST colon found ANYWHERE in the string -
+  * silently corrupting any title/category/template name that
+  * legitimately contains one (reported: category names combining
+  * parentheses and a colon).
+  */
+  private static function stripNamespacePrefix($text){
+	if ( !preg_match('/^([^:]+):(.*)$/su', $text, $m) ){
+	  return $text; ## no colon at all - nothing to strip
+	}
+	$candidate = str_replace(' ', '_', mb_strtolower(trim($m[1])));
+	$nsIds = MediaWikiServices::getInstance()->getContentLanguage()->getNamespaceIds();
+	return array_key_exists($candidate, $nsIds) ? $m[2] : $text;
+  }
+
+  /*
   * Base function
   */
   public static function wfCatList( $input, array $args, Parser $parser, PPFrame $frame ) {
@@ -48,7 +73,7 @@ class CatListHooks {
 	## other page, pass the category name explicitly as the tag's inner
 	## content: <catlist ...>ИмяКатегории</catlist>
 	if( !isset( $input ) or $input === '' ) {
-	  $input = preg_replace('/.*?:/', '', $parser->getPage()->prefixedText);
+	  $input = self::stripNamespacePrefix( $parser->getPage()->prefixedText );
 	}
 
 	## Set namespaces from tag parameter (as comma separated numeric values). Default is Main
@@ -101,11 +126,11 @@ class CatListHooks {
 	  }
 
 	  ## Filter only pages with special infoboxes
-	  if ( isset($args['templates']) and is_array($tpls) and !in_array( preg_replace('/.*?:/', '', $thumb['template']), $tpls ) ) {
+	  if ( isset($args['templates']) and is_array($tpls) and !in_array( self::stripNamespacePrefix( $thumb['template'] ), $tpls ) ) {
 		continue;
 	  }
 
-	  $thumb['template'] = preg_replace('/.*?:/', '', $thumb['template']); ## 10yrs old error in templates discovered by ext =)))
+	  $thumb['template'] = self::stripNamespacePrefix( $thumb['template'] ); ## 10yrs old error in templates discovered by ext =)))
 
 	  $sect_id = (isset($args['sect_id'])) ? $args['sect_id'] . '_' : '';
 
@@ -163,7 +188,7 @@ class CatListHooks {
   * both 1.41 and 1.46 without a version branch to maintain.
   */
   public static function getCatPages($catName, $namespace = 0) {
-	$catName = preg_replace('/(.*?:)/', '', $catName);
+	$catName = self::stripNamespacePrefix( $catName );
 
 	$services = MediaWikiServices::getInstance();
 	$dbr = method_exists($services, 'getConnectionProvider')
